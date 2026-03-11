@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retro Palette Converter</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Scanline overlay -->
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="logo-block">
+        <span class="logo-icon">▓</span>
+        <div>
+          <h1 class="app-title">Retro Palette Converter</h1>
+          <p class="app-subtitle">Convert images into limited retro-style palettes for pixel art and game development.</p>
+        </div>
+      </div>
+      <div class="header-blink" aria-hidden="true">■ READY</div>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <main class="app-main">
+
+    <!-- LEFT PANEL -->
+    <aside class="panel panel-left" id="left-panel">
+      <div class="panel-header">
+        <span class="panel-tag">01</span>
+        <span class="panel-label">Controls</span>
+      </div>
+
+      <section class="control-section">
+        <label class="control-label">Image Input</label>
+        <button class="btn btn-primary" id="btn-upload">
+          <span class="btn-icon">⬆</span> Upload Image
+        </button>
+        <input type="file" id="file-input" accept=".png,.jpg,.jpeg,.webp" hidden />
+        <p class="hint-text" id="upload-hint">PNG · JPG · WEBP supported</p>
+      </section>
+
+      <section class="control-section">
+        <label class="control-label" for="palette-select">Color Palette</label>
+        <select class="select-input" id="palette-select">
+          <option value="classic-handheld">Classic Handheld (4 colors)</option>
+          <option value="retro-handheld-green">Retro Handheld Green (4 colors)</option>
+          <option value="8bit-console">8-bit Console (16 colors)</option>
+          <option value="early-pc">Early PC Graphics (16 colors)</option>
+          <option value="limited-indie">Limited Indie Palette (8 colors)</option>
+          <option value="pico-style">Micro Fantasy (16 colors)</option>
+          <option value="custom" id="custom-option" disabled>Custom Palette</option>
+        </select>
+      </section>
+
+      <section class="control-section">
+        <label class="control-label">Dithering</label>
+        <div class="toggle-row">
+          <label class="toggle-label" for="dither-toggle">
+            <input type="checkbox" id="dither-toggle" class="toggle-check" />
+            <span class="toggle-track">
+              <span class="toggle-thumb"></span>
+            </span>
+            <span class="toggle-text">Enable Floyd–Steinberg Dithering</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <label class="control-label">Palette File</label>
+        <div class="import-row">
+          <button class="btn btn-secondary import-btn" id="btn-import">
+            <span class="btn-icon">⬇</span> Import Palette
+          </button>
+          <button class="btn-help" id="btn-import-help" aria-label="Show palette format help" title="Format help">?</button>
+        </div>
+        <input type="file" id="palette-file-input" accept=".json,.gpl" hidden />
+        <p class="hint-text">Accepts JSON or GPL (GIMP)</p>
+      </section>
+
+      <section class="control-section">
+        <label class="control-label">Export Palette</label>
+        <div class="btn-row">
+          <button class="btn btn-secondary btn-sm" id="btn-export-json">JSON</button>
+          <button class="btn btn-secondary btn-sm" id="btn-export-gpl">GPL</button>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <button class="btn btn-danger" id="btn-reset">
+          <span class="btn-icon">↺</span> Reset Workspace
+        </button>
+      </section>
+    </aside>
+
+    <!-- CENTER PANEL -->
+    <section class="panel panel-center" id="center-panel">
+      <div class="panel-header">
+        <span class="panel-tag">02</span>
+        <span class="panel-label">Preview</span>
+        <span class="panel-status" id="convert-status">No image loaded</span>
+      </div>
+
+      <div class="preview-area" id="preview-area">
+        <div class="preview-empty" id="preview-empty">
+          <div class="empty-icon">▒</div>
+          <p>Upload an image to begin</p>
+          <p class="hint-text">Drag &amp; drop or click Upload Image</p>
+        </div>
+
+        <!-- Slider comparison container -->
+        <div class="compare-container" id="compare-container" hidden>
+          <canvas id="canvas-original" class="compare-canvas"></canvas>
+          <canvas id="canvas-converted" class="compare-canvas canvas-converted-overlay"></canvas>
+          <div class="slider-overlay" id="slider-overlay">
+            <div class="slider-divider" id="slider-divider">
+              <div class="slider-handle" id="slider-handle">
+                <span>◀▶</span>
+              </div>
+            </div>
+          </div>
+          <div class="compare-label compare-label-left">ORIGINAL</div>
+          <div class="compare-label compare-label-right">CONVERTED</div>
+        </div>
+
+        <!-- Processing overlay -->
+        <div class="processing-overlay" id="processing-overlay" hidden>
+          <div class="processing-spinner">▓▒░</div>
+          <p>Processing…</p>
+        </div>
+      </div>
+
+      <div class="preview-info-bar" id="preview-info" hidden>
+        <span id="img-dimensions">—</span>
+        <span class="sep">·</span>
+        <span id="img-format">—</span>
+        <span class="sep">·</span>
+        <span id="slider-pct">Slider: 50%</span>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL -->
+    <aside class="panel panel-right" id="right-panel">
+      <div class="panel-header">
+        <span class="panel-tag">03</span>
+        <span class="panel-label">Palette</span>
+      </div>
+
+      <div class="palette-meta">
+        <span class="palette-name" id="palette-name-display">Classic Handheld</span>
+        <span class="palette-count" id="palette-count">4 colors</span>
+      </div>
+
+      <div class="palette-grid" id="palette-grid"></div>
+
+      <div class="palette-list" id="palette-list"></div>
+    </aside>
+
+  </main>
+
+  <!-- BOTTOM BAR -->
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <span class="footer-hint" id="footer-hint">Load an image to enable download</span>
+      <button class="btn btn-accent" id="btn-download" disabled>
+        <span class="btn-icon">⬇</span> Download Processed Image
+      </button>
+    </div>
+  </footer>
+
+  <!-- CONFIRMATION MODAL -->
+  <div class="modal-backdrop" id="modal-backdrop" hidden>
+    <div class="modal" id="modal">
+      <div class="modal-icon">⚠</div>
+      <h2 class="modal-title">Are you sure?</h2>
+      <p class="modal-body" id="modal-body">This may erase your current progress.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+        <button class="btn btn-danger" id="modal-confirm">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PALETTE FORMAT HELP MODAL -->
+  <div class="modal-backdrop" id="help-modal-backdrop" hidden>
+    <div class="modal help-modal" id="help-modal" role="dialog" aria-labelledby="help-modal-title">
+      <button class="help-modal-close" id="help-modal-close" aria-label="Close help panel">2715</button>
+      <div class="help-modal-header">
+        <span class="help-modal-icon">?</span>
+        <h2 class="modal-title" id="help-modal-title">Palette File Format Examples</h2>
+      </div>
+      <p class="help-modal-intro">You can import palettes in JSON or GPL (GIMP) format.</p>
+      <div class="help-example">
+        <div class="help-example-label"><span class="help-format-tag">JSON</span> Example 1</div>
+        <pre class="help-code"><code>{
+  "name": "My Palette",
+  "colors": [
+    "#000000",
+    "#FF0000",
+    "#00FF00",
+    "#0000FF"
+  ]
+}</code></pre>
+        <p class="help-example-note">The <code>colors</code> field must contain HEX color values.</p>
+      </div>
+      <div class="help-example">
+        <div class="help-example-label"><span class="help-format-tag help-format-tag--gpl">GPL</span> Example 2 2014 GIMP Palette</div>
+        <pre class="help-code"><code>GIMP Palette
+Name: Example Palette
+Columns: 4
+#
+  0   0   0  Black
+255   0   0  Red
+  0 255   0  Green
+  0   0 255  Blue</code></pre>
+        <p class="help-example-note">Each line contains RGB values separated by spaces.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden working canvas -->
+  <canvas id="canvas-work" hidden></canvas>
+
+  <script src="app.js"></script>
+</body>
+</html>
