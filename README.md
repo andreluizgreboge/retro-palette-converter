@@ -34,7 +34,7 @@ You can try the tool here:
 
 Below is a simple before / after conversion using a limited retro palette.
 
-![Retro palette conversion example](assets/example1.png)
+![Retro palette conversion example](assets/example1.jpg)
 
 
 ---
