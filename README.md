@@ -29,6 +29,12 @@ You can try the tool here:
 - Download processed image as PNG
 
 ---
+## Video Demo
+
+See the tool in action:
+
+[![Retro Palette Converter Demo](https://img.youtube.com/vi/gmD3B3RsQdg/0.jpg)](https://www.youtube.com/watch?v=gmD3B3RsQdg)
+
 
 ## Example
 
