@@ -8,14 +8,6 @@ The tool runs entirely in the browser — no installation or backend required.
 
 ---
 
-## Live Demo
-
-You can try the tool here:
-
-👉 https://alga93.itch.io/retro-palette-converter
-
-
----
 
 ## Features
 
